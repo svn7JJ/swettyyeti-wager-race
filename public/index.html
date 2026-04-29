@@ -464,7 +464,7 @@
   function updateCountdown() {
     var now = Date.now();
     var start = new Date(config.startDate + "T00:00:00").getTime();
-    var end = new Date(config.endDate + "T23:59:59").getTime();
+    var end = new Date(config.endDate + "T00:00:00").getTime();
     var statusEl = document.getElementById("statusWrap");
     var cdEl = document.getElementById("countdown");
     var target, statusHtml;
