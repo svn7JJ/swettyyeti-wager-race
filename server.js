@@ -22,6 +22,18 @@ const RACE_CONFIG = {
   brandName: "SWETTYYETI",
 };
 
+const RACE_BASELINES = {
+  TomDonkey: { wagered: 18994.29, bets: 7507 },
+  Jessica25: { wagered: 17073.12, bets: 10848 },
+  ItsPigeon: { wagered: 5382.27, bets: 8230 },
+  Itsjace03: { wagered: 3841.38, bets: 1188 },
+  Gilly92: { wagered: 2585.38, bets: 1706 },
+  Nurser: { wagered: 444.18, bets: 171 },
+  Kaarrrllll: { wagered: 356.24, bets: 627 },
+  Adam32: { wagered: 345.21, bets: 313 },
+  marns2x: { wagered: 218.38, bets: 38 },
+};
+
 // ═══════════════════════════════════════════════════════════════════
 //  API CREDENTIALS
 // ═══════════════════════════════════════════════════════════════════
@@ -92,15 +104,20 @@ app.get("/race-data", async (_req, res) => {
       });
     }
 
-    users.sort((a, b) => (b.totalAmountWagered || 0) - (a.totalAmountWagered || 0));
-
-    const players = users.map((u, i) => ({
-      rank: i + 1,
-      username: u.username || "Unknown",
-      wagered: u.totalAmountWagered || 0,
-      bets: u.totalBetsPlaced || 0,
-      isActive: u.isActive || false,
-    }));
+    const players = users
+      .map((u) => {
+        const username = u.username || "Unknown";
+        const baseline = RACE_BASELINES[username] || { wagered: 0, bets: 0 };
+        return {
+          username,
+          wagered: Math.max(0, (u.totalAmountWagered || 0) - baseline.wagered),
+          bets: Math.max(0, (u.totalBetsPlaced || 0) - baseline.bets),
+          isActive: u.isActive || false,
+        };
+      })
+      .filter((p) => p.wagered > 0 || p.bets > 0)
+      .sort((a, b) => b.wagered - a.wagered)
+      .map((p, i) => ({ ...p, rank: i + 1 }));
 
     const totalWagered = players.reduce((s, p) => s + p.wagered, 0);
     const totalBets = players.reduce((s, p) => s + p.bets, 0);
