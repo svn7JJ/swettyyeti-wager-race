@@ -11,8 +11,8 @@ const PORT = process.env.PORT || 3000;
 const RACE_CONFIG = {
   name: "MARCH MADNESS WAGER RACE",
   subtitle: "Wager the most on Damble to climb the leaderboard",
-  startDate: "2026-03-26",
-  endDate: "2026-05-01",
+  startDate: "2026-05-01",
+  endDate: "2026-06-01",
   prizes: [
     { place: "1st", reward: "$150" },
     { place: "2nd", reward: "$75" },
