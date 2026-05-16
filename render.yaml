@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: gambros-luxdrop-wager-race
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: API_KEY
+        sync: false
+      - key: AFFILIATE_CODES
+        value: gambros
