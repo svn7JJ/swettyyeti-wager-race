@@ -59,14 +59,28 @@ async function fetchLuxdrop() {
   const url = `${LUXDROP_BASE}?${qs}`;
   console.log(`  ->  Fetching: ${url}`);
 
+  // Cloudflare sits in front of luxdrop.com and rejects requests with default
+  // Node fetch fingerprints. Sending realistic browser-like headers gets us
+  // through the default bot challenge for most public API endpoints.
   const response = await fetch(url, {
     method: "GET",
-    headers: { "x-api-key": API_KEY },
+    headers: {
+      "x-api-key": API_KEY,
+      "User-Agent": "Mozilla/5.0 (compatible; GambrosLuxdropLeaderboard/1.0; +https://github.com/svn7JJ/gambros-wager-race)",
+      "Accept": "application/json, text/plain, */*",
+      "Accept-Language": "en-US,en;q=0.9",
+      "Accept-Encoding": "gzip, deflate, br",
+      "Cache-Control": "no-cache",
+      "Pragma": "no-cache",
+    },
   });
 
   if (!response.ok) {
     const text = await response.text();
-    throw { status: response.status, body: text };
+    // Surface whether Cloudflare blocked us (so the UI can stop labeling it
+    // as 'Invalid API key') by sniffing the response body.
+    const isCloudflareBlock = /cloudflare/i.test(text) && /(blocked|attention required|ray id)/i.test(text);
+    throw { status: response.status, body: text, cloudflare: isCloudflareBlock };
   }
 
   const json = await response.json();
@@ -208,9 +222,16 @@ app.get("/race-data", async (_req, res) => {
     console.error("  x  API error:", err);
     const status = err.status || 502;
     let msg = "Failed to fetch data from LuxDrop API";
-    if (status === 401 || status === 403) msg = "Invalid API key for LuxDrop";
-    if (status === 404) msg = "Affiliate code not found";
-    res.status(status).json({ error: msg, detail: err.body || null });
+    if (err.cloudflare) {
+      msg = "Blocked by Cloudflare in front of LuxDrop. The API key is fine — Cloudflare is rejecting the request itself. Ask LuxDrop to allowlist this server's IP/User-Agent in their Cloudflare WAF.";
+    } else if (status === 401) {
+      msg = "Invalid API key for LuxDrop";
+    } else if (status === 403) {
+      msg = "LuxDrop refused the request (403). Could be a bad key or an upstream block.";
+    } else if (status === 404) {
+      msg = "Affiliate code not found";
+    }
+    res.status(status).json({ error: msg, detail: err.body || null, cloudflare: !!err.cloudflare });
   }
 });
 
