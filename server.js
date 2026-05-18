@@ -60,16 +60,25 @@ async function fetchLuxdrop() {
   console.log(`  ->  Fetching: ${url}`);
 
   // Cloudflare sits in front of luxdrop.com and rejects requests with default
-  // Node fetch fingerprints. Sending realistic browser-like headers gets us
-  // through the default bot challenge for most public API endpoints.
+  // Node fetch fingerprints. Send a full real-Chrome header set: every UA, hint,
+  // Sec-Fetch-*, Origin, Referer. Cloudflare's "Bot Fight Mode" rejects requests
+  // missing these client hints, so populate them all.
   const response = await fetch(url, {
     method: "GET",
     headers: {
       "x-api-key": API_KEY,
-      "User-Agent": "Mozilla/5.0 (compatible; GambrosLuxdropLeaderboard/1.0; +https://github.com/svn7JJ/gambros-wager-race)",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
       "Accept": "application/json, text/plain, */*",
       "Accept-Language": "en-US,en;q=0.9",
-      "Accept-Encoding": "gzip, deflate, br",
+      "Accept-Encoding": "gzip, deflate, br, zstd",
+      "sec-ch-ua": '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": '"Windows"',
+      "Sec-Fetch-Dest": "empty",
+      "Sec-Fetch-Mode": "cors",
+      "Sec-Fetch-Site": "same-site",
+      "Origin": "https://luxdrop.com",
+      "Referer": "https://luxdrop.com/",
       "Cache-Control": "no-cache",
       "Pragma": "no-cache",
     },
