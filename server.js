@@ -14,12 +14,17 @@ const RACE_CONFIG = {
   subtitle: "Open cases on LuxDrop. Climb the leaderboard. Claim your share.",
   startDate: "2026-05-16",
   endDate: "2026-06-15T23:59:59Z",
-  prizes: [
-    { place: "1st", reward: "$100" },
-    { place: "2nd", reward: "—" },
-    { place: "3rd", reward: "—" },
+  // 1st place reward scales with the community's total wager.
+  // The tier with the highest minWager <= totalWagered is the active tier.
+  prizeTiers: [
+    { minWager: 0,      first: 100, second: 0,   third: 0   },
+    { minWager: 1000,   first: 200, second: 50,  third: 0   },
+    { minWager: 5000,   first: 300, second: 100, third: 50  },
+    { minWager: 15000,  first: 400, second: 150, third: 75  },
+    { minWager: 30000,  first: 500, second: 200, third: 100 },
   ],
-  prizePoolLabel: "$100 PRIZE POOL · GROWS WITH WAGER",
+  maxFirstPrize: 500,
+  prizePoolLabel: "$500 MAX PRIZE · GROWS WITH WAGER",
   signupLink: "https://luxdrop.com/r/gambros",
   brandLeft: "GAMBROS",
   brandRight: "LUXDROP",
@@ -132,6 +137,38 @@ function extractPlayers(raw) {
   return out;
 }
 
+// Compute the active prize tier and progress toward the next one based on the
+// community's total wager. Returns prizes ready to render plus tier metadata.
+function computePrizeStatus(totalWagered) {
+  const tiers = RACE_CONFIG.prizeTiers;
+  let activeIdx = 0;
+  for (let i = 0; i < tiers.length; i++) {
+    if (totalWagered >= tiers[i].minWager) activeIdx = i;
+  }
+  const active = tiers[activeIdx];
+  const next = tiers[activeIdx + 1] || null;
+  const toDollar = (n) => (n > 0 ? `$${n}` : "—");
+  return {
+    prizes: [
+      { place: "1st", reward: toDollar(active.first) },
+      { place: "2nd", reward: toDollar(active.second) },
+      { place: "3rd", reward: toDollar(active.third) },
+    ],
+    tierIndex: activeIdx,
+    tierCount: tiers.length,
+    currentFirst: active.first,
+    nextFirst: next ? next.first : null,
+    nextThreshold: next ? next.minWager : null,
+    remainingToNext: next ? Math.max(0, next.minWager - totalWagered) : 0,
+    ladder: tiers.map((t, i) => ({
+      first: t.first,
+      threshold: t.minWager,
+      active: i === activeIdx,
+      passed: i < activeIdx,
+    })),
+  };
+}
+
 // ─── Race config endpoint ────────────────────────────────────────
 app.get("/race-config", (_req, res) => {
   res.json(RACE_CONFIG);
@@ -154,9 +191,12 @@ app.get("/race-data", async (_req, res) => {
 
     const totalWagered = players.reduce((s, p) => s + p.wagered, 0);
     const totalDeposited = players.reduce((s, p) => s + p.deposited, 0);
+    const prizeStatus = computePrizeStatus(totalWagered);
 
     res.json({
       players,
+      prizes: prizeStatus.prizes,
+      prizeStatus,
       stats: {
         totalWagered,
         totalDeposited,

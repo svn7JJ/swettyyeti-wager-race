@@ -457,6 +457,97 @@
   }
   @keyframes skel { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
 
+  /* ════════════════════════ PRIZE LADDER ════════════════════════ */
+  .ladder {
+    margin-top: 28px; padding: 18px 18px 22px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(245,158,11,0.06), rgba(168,85,247,0.04));
+    border: 1px solid rgba(245,158,11,0.20);
+    box-shadow: 0 0 60px rgba(245,158,11,0.06) inset;
+    opacity: 0; transform: translateY(8px);
+    animation: rise 0.7s ease 0.25s forwards;
+  }
+  .ladder[hidden] { display: none; }
+  .ladder-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px; gap: 12px; flex-wrap: wrap;
+  }
+  .ladder-now { font-family: var(--fm); font-size: 12px; letter-spacing: 1.5px; color: var(--t2); text-transform: uppercase; }
+  .ladder-now strong {
+    color: var(--gold-1); font-weight: 700;
+    text-shadow: 0 0 12px rgba(245,158,11,0.5);
+    margin-left: 4px;
+  }
+  .ladder-max {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--fm); font-size: 11px; letter-spacing: 2px; font-weight: 700;
+    color: var(--gold-2);
+    padding: 4px 12px; border-radius: 100px;
+    background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25);
+    text-transform: uppercase;
+  }
+  .ladder-track {
+    position: relative;
+    margin: 0 14px;
+    height: 60px;
+  }
+  .ladder-rail {
+    position: absolute; left: 0; right: 0; top: 14px; height: 4px;
+    background: rgba(255,255,255,0.06); border-radius: 4px;
+    overflow: hidden;
+  }
+  .ladder-fill {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    background: linear-gradient(90deg, var(--gold-2), var(--gold-1));
+    border-radius: 4px;
+    box-shadow: 0 0 12px rgba(245,158,11,0.5);
+    width: 0; transition: width 1.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+  .ladder-stops { position: absolute; inset: 0; display: flex; justify-content: space-between; }
+  .stop {
+    position: relative; display: flex; flex-direction: column; align-items: center;
+    transform: translateY(0);
+  }
+  .stop .dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    margin-top: 9px;
+    background: var(--bg-1);
+    border: 2px solid rgba(255,255,255,0.18);
+    transition: all 0.4s ease;
+    position: relative; z-index: 2;
+  }
+  .stop.passed .dot { background: var(--gold-2); border-color: var(--gold-1); box-shadow: 0 0 10px rgba(245,158,11,0.5); }
+  .stop.active .dot {
+    background: var(--gold-1); border-color: var(--gold-2);
+    box-shadow: 0 0 0 4px rgba(245,158,11,0.18), 0 0 18px rgba(245,158,11,0.6);
+    animation: ladderPulse 2s ease-in-out infinite;
+    transform: scale(1.25);
+  }
+  @keyframes ladderPulse {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(245,158,11,0.18), 0 0 18px rgba(245,158,11,0.6); }
+    50% { box-shadow: 0 0 0 8px rgba(245,158,11,0.10), 0 0 26px rgba(245,158,11,0.85); }
+  }
+  .stop .amt {
+    margin-top: 8px;
+    font-family: var(--fm); font-size: 13px; font-weight: 700;
+    color: var(--t2);
+    transition: color 0.3s;
+  }
+  .stop.passed .amt { color: var(--gold-1); }
+  .stop.active .amt { color: var(--gold-1); font-size: 15px; text-shadow: 0 0 12px rgba(245,158,11,0.4); }
+  .stop .thr {
+    font-family: var(--fm); font-size: 9px; font-weight: 600;
+    color: var(--t3); letter-spacing: 1px;
+    margin-top: 2px;
+  }
+  .ladder-foot {
+    margin-top: 8px; text-align: center;
+    font-family: var(--fm); font-size: 11px; letter-spacing: 1px;
+    color: var(--t2);
+  }
+  .ladder-foot strong { color: var(--gold-1); font-weight: 700; }
+  .ladder-foot.maxed { color: var(--gold-1); }
+
   /* ════════════════════════ STATS BAR ════════════════════════ */
   .stats-bar {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
@@ -572,6 +663,11 @@
     .stat-card { padding: 12px 8px; }
     .stat-num { font-size: 16px; }
     .stat-lbl { font-size: 9px; }
+    .ladder { padding: 14px 10px 18px; }
+    .ladder-track { margin: 0 6px; }
+    .stop .amt { font-size: 11px; }
+    .stop.active .amt { font-size: 12px; }
+    .stop .thr { font-size: 8px; }
   }
 </style>
 </head>
@@ -619,6 +715,21 @@
       <div class="stat-card"><div class="stat-num" id="stat-wagered">$0</div><div class="stat-lbl">Total Wagered</div></div>
       <div class="stat-card"><div class="stat-num" id="stat-players">0</div><div class="stat-lbl">Players</div></div>
       <div class="stat-card"><div class="stat-num" id="stat-days">0</div><div class="stat-lbl">Days Left</div></div>
+    </div>
+
+    <div class="ladder" id="ladder" hidden>
+      <div class="ladder-head">
+        <div class="ladder-now">Current 1st prize <strong id="ladder-current">$100</strong></div>
+        <div class="ladder-max">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.39 4.84L20 7.6l-4 3.9.94 5.5L12 14.4l-4.94 2.6.94-5.5L4 7.6l5.61-.76L12 2z"/></svg>
+          Max <span id="ladder-max">$500</span>
+        </div>
+      </div>
+      <div class="ladder-track">
+        <div class="ladder-rail"><div class="ladder-fill" id="ladder-fill"></div></div>
+        <div class="ladder-stops" id="ladder-stops"></div>
+      </div>
+      <div class="ladder-foot" id="ladder-foot">Wager more to unlock the next tier</div>
     </div>
   </section>
 
@@ -1111,6 +1222,9 @@
     // Stats bar
     updateStatsBar(players);
 
+    // Prize ladder
+    updatePrizeLadder(window.__prizeStatus, players);
+
     // Hover tilt on podium cards
     attachTilt();
 
@@ -1124,6 +1238,65 @@
     players.forEach(p => { nextRanks[p.username.toLowerCase()] = p.rank; });
     prevRanks = nextRanks;
     firstRender = false;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  PRIZE LADDER — tier progression based on total wager
+  // ═══════════════════════════════════════════════════════════════════
+  function compactWager(n) {
+    n = Number(n || 0);
+    if (n >= 1e6) return '$' + (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (n >= 1e3) return '$' + (n / 1e3).toFixed(0) + 'K';
+    return '$' + n;
+  }
+  function updatePrizeLadder(status, players) {
+    if (!status || !status.ladder || status.ladder.length === 0) return;
+    const ladder = document.getElementById('ladder');
+    if (!ladder) return;
+    ladder.hidden = false;
+
+    document.getElementById('ladder-current').textContent = '$' + status.currentFirst;
+    document.getElementById('ladder-max').textContent = '$' + status.ladder[status.ladder.length - 1].first;
+
+    const stopsEl = document.getElementById('ladder-stops');
+    stopsEl.innerHTML = status.ladder.map((s) => {
+      const cls = ['stop', s.passed ? 'passed' : '', s.active ? 'active' : ''].filter(Boolean).join(' ');
+      return `<div class="${cls}">
+        <div class="dot"></div>
+        <div class="amt">$${s.first}</div>
+        <div class="thr">${compactWager(s.threshold)}+</div>
+      </div>`;
+    }).join('');
+
+    // Fill % between current tier's threshold and next tier's threshold
+    const totalWagered = players.reduce((s, p) => s + Number(p.wagered || 0), 0);
+    const last = status.ladder.length - 1;
+    let pct;
+    if (status.tierIndex >= last) {
+      pct = 100;
+    } else {
+      const currentTier = status.ladder[status.tierIndex];
+      const nextTier = status.ladder[status.tierIndex + 1];
+      const span = nextTier.threshold - currentTier.threshold;
+      const into = Math.max(0, totalWagered - currentTier.threshold);
+      pct = Math.min(100, Math.max(0, (into / span) * 100));
+      // Map the per-tier progress onto the absolute rail span between stops
+      const stopFraction = 100 / last;
+      pct = status.tierIndex * stopFraction + (pct / 100) * stopFraction;
+    }
+    // Allow the layout to settle then animate fill width
+    requestAnimationFrame(() => {
+      document.getElementById('ladder-fill').style.width = pct + '%';
+    });
+
+    const foot = document.getElementById('ladder-foot');
+    if (status.tierIndex >= last) {
+      foot.classList.add('maxed');
+      foot.innerHTML = `<strong>MAX TIER UNLOCKED</strong> · 1st place locked at $${status.currentFirst}`;
+    } else {
+      foot.classList.remove('maxed');
+      foot.innerHTML = `Wager <strong>${compactWager(status.remainingToNext)}</strong> more to unlock <strong>$${status.nextFirst}</strong>`;
+    }
   }
 
   // ═══════════════════════════════════════════════════════════════════
@@ -1265,7 +1438,9 @@
         if (cta) cta.href = (window.__signupLink || '#');
         return;
       }
-      renderLeaderboard(json.players || [], lastPrizes);
+      const prizesToUse = json.prizes && json.prizes.length ? json.prizes : lastPrizes;
+      window.__prizeStatus = json.prizeStatus || null;
+      renderLeaderboard(json.players || [], prizesToUse);
       if (json.updatedAt) {
         document.getElementById('updated').textContent = new Date(json.updatedAt).toLocaleTimeString();
       }
