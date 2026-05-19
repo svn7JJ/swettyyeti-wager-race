@@ -14,9 +14,9 @@ const RACE_CONFIG = {
   startDate: "2026-05-01",
   endDate: "2026-06-01",
   prizes: [
-    { place: "1st", reward: "$150" },
-    { place: "2nd", reward: "$75" },
-    { place: "3rd", reward: "$25" },
+    { place: "1st", reward: "$375" },
+    { place: "2nd", reward: "$260" },
+    { place: "3rd", reward: "$115" },
   ],
   signupLink: "https://www.damble.io/?dialog=auth&tab=register&referralCode=damble-Swettyyeti",
   brandName: "SWETTYYETI",
