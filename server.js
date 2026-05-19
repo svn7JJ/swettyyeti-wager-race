@@ -34,7 +34,7 @@ const RACE_CONFIG = {
 //  LUXDROP API
 // ═══════════════════════════════════════════════════════════════════
 const API_KEY = process.env.API_KEY || "";
-const AFFILIATE_CODES = process.env.AFFILIATE_CODES || "gambros";
+const AFFILIATE_CODES = process.env.AFFILIATE_CODES || "Gambroslux";
 const LUXDROP_BASE = "https://api.luxdrop.com/external/affiliates";
 const RACE_START_ISO = RACE_CONFIG.startDate;
 const RACE_END_ISO = RACE_CONFIG.endDate.slice(0, 10);
