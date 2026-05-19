@@ -10,6 +10,7 @@ const PORT = process.env.PORT || 3000;
 // ═══════════════════════════════════════════════════════════════════
 const RACE_CONFIG = {
   name: "MAY MADNESS WAGER RACE",
+  title: "MAY MADNESS WAGER RACE",
   subtitle: "Wager the most on Damble to climb the leaderboard",
   startDate: "2026-05-01",
   endDate: "2026-06-01",
@@ -18,8 +19,13 @@ const RACE_CONFIG = {
     { place: "2nd", reward: "$260" },
     { place: "3rd", reward: "$115" },
   ],
+  prizePoolLabel: "$750 PRIZE POOL",
   signupLink: "https://www.damble.io/?dialog=auth&tab=register&referralCode=damble-Swettyyeti",
   brandName: "SWETTYYETI",
+  brandLeft: "SWETTYYETI",
+  brandRight: "DAMBLE",
+  ctaText: "Join on Damble",
+  ctaDescription: "Sign up via SwettyYeti to qualify for this race.",
 };
 
 const RACE_BASELINES = {
